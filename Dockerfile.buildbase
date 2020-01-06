@@ -1,0 +1,10 @@
+FROM fedora:28 as fmontorsi_builder
+
+#RUN apt-get update && \
+#    apt-get install -y git build-essential cmake python3-pip && \
+#    pip3 install conan
+RUN yum install -y git make automake gcc gcc-c++ kernel-devel gdb \
+                   pax-utils
+
+RUN gcc --version
+RUN gdb --version
