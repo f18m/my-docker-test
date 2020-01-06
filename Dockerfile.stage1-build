@@ -1,4 +1,9 @@
-FROM fmontorsi_builder:1.0 as mytest_builder
+#
+# Docker to build the ELF binary using the builder base image toolchain
+# and to package all its required dependencies as a tarball
+#
+
+FROM fmontorsi_builder:1.0
 
 # additional deps
 RUN yum install -y zeromq-devel

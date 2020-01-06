@@ -1,8 +1,9 @@
+#
+# Base builder image:
+# defines which toolchain will be used to build the C++ code
+#
 FROM fedora:28 as fmontorsi_builder
 
-#RUN apt-get update && \
-#    apt-get install -y git build-essential cmake python3-pip && \
-#    pip3 install conan
 RUN yum install -y git make automake gcc gcc-c++ kernel-devel gdb \
                    pax-utils
 
