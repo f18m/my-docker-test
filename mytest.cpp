@@ -1,8 +1,12 @@
 // Minimal HTTP server in 0MQ
 // from http://glaudiston.blogspot.com/2017/08/zmq-zeromq-as-http-server.html
 
-#include "zhelpers.h"
 #include <cassert>
+#include "zhelpers.h"
+
+static volatile int keepRunning = 1;
+
+void intHandler(int dummy) { keepRunning = 0; }
 
 int main(void) {
   int rc;
@@ -18,22 +22,39 @@ int main(void) {
   uint8_t id[256];
   size_t id_size = 256;
 
-  while (1) {
-    // Get HTTP request;
+  signal(SIGINT, intHandler);
+
+  printf("ZMQ-based HTTP server initialized\n");
+
+  zmq_msg_t http_request;
+  zmq_msg_init(&http_request);
+  while (keepRunning) {
+    // Get HTTP request IDENTITY;
     // first frame has ID, the next the request.
     id_size = zmq_recv(server, id, 256, 0);
-    assert(id_size > 0);
+    if (id_size == -1 && errno == EINTR)
+      break;               // user wants to exit with CTRL+C
+    assert(id_size == 5);  // identity frames are 5B
 
-    // Get HTTP request
-    char *request = s_recv(server);
-    puts(request); // Professional Logging(TM)
-    free(request); // We throw this away
+    // Get HTTP request PAYLOAD
+    rc = zmq_msg_recv(&http_request, server, 0);
+    if (rc == -1) break;
+    printf("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
+           zmq_msg_data(&http_request));  // Professional Logging(TM)
+
+    while (true) {
+      rc = zmq_msg_recv(&http_request, server, ZMQ_DONTWAIT);
+      if (rc == -1) break;
+      printf("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
+             zmq_msg_data(&http_request));  // Professional Logging(TM)
+    }
 
     // define the response
-    char http_response[] = "HTTP/1.0 200 OK\n"
-                           "Content-Type: text/html\n"
-                           "\n"
-                           "Hello, World!\n";
+    char http_response[] =
+        "HTTP/1.0 200 OK\n"
+        "Content-Type: text/html\n"
+        "\n"
+        "Hello, World!\n";
 
     // start sending response
     rc = zmq_send(server, id, id_size, ZMQ_SNDMORE);
@@ -48,6 +69,8 @@ int main(void) {
     rc = zmq_send(server, NULL, 0, ZMQ_SNDMORE);
     assert(rc != -1);
   }
+
+  printf("ZMQ-based HTTP server shutting down\n");
 
   rc = zmq_close(server);
   assert(rc == 0);

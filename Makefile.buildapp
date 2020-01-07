@@ -1,0 +1,14 @@
+
+# targets that are run from inside Dockers:
+
+all:
+	gcc -c -o mytest.o mytest.cpp
+	gcc -o mytest mytest.o -lzmq
+
+install: all
+	#mkdir -p $(DESTDIR)/bin/ $(DESTDIR)/output/
+	#cp -afv mytest $(DESTDIR)/bin/
+	# package the app binary and all its companion shared libraries
+	mkdir -p $(DESTDIR)
+	lddtree -l mytest | tee -a /tmp/dependency_map.txt
+	tar --dereference -c -v -z --absolute-names --files-from=/tmp/dependency_map.txt -f $(DESTDIR)/mytest.tar.gz

@@ -1,0 +1,19 @@
+#
+# Shared-volume based builder:
+#
+FROM fmontorsi_builder:1 as mytest_builder
+
+# additional deps
+RUN yum install -y zeromq-devel
+
+# default is to build something that a derived image has placed inside the container image:
+ENV MAKEFILE_OPTS "-C /home/builder"
+
+# but you can also mount a shared volume from outside and build there:
+VOLUME ["/project"]
+
+RUN gcc --version
+RUN gdb --version
+RUN mkdir -p /home/builder
+
+CMD make ${MAKEFILE_OPTS}

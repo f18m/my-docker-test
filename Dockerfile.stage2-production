@@ -3,6 +3,6 @@
 # under the bin/ folder. All its required shared libraries should be available as well under bin/
 
 FROM scratch
-COPY bin/ /
+COPY output/ /
 EXPOSE 8080
-ENTRYPOINT [ "/opt/mytest/bin/mytest" ]
+ENTRYPOINT [ "/mytest" ]

@@ -6,7 +6,7 @@
 #
 # First stage: builder Docker
 #
-FROM fmontorsi_builder:1.0 as mytest_builder
+FROM fmontorsi_builder:1 as mytest_builder
 
 # additional utilities over the base builder image:
 RUN yum install -y zeromq-devel rsync
@@ -15,10 +15,10 @@ RUN gdb --version
 
 # cross-compile the software using the builder image toolchain:
 RUN mkdir -p /home/builder /opt/dest
-COPY *.cpp *.h Makefile /home/builder/
+COPY *.cpp *.h Makefile.buildapp /home/builder/
 RUN ls -la /home/builder/
-RUN make -C /home/builder/ all
-RUN make -C /home/builder/ install DESTDIR=/opt/mytest
+RUN make -C /home/builder/ -f Makefile.buildapp all
+RUN make -C /home/builder/ -f Makefile.buildapp install DESTDIR=/opt/mytest
 RUN lddtree -l /opt/mytest/bin/mytest | tee -a /home/builder/dependency_map.txt
 
 RUN rsync -av -L -K --files-from=/home/builder/dependency_map.txt / /production-docker-rootfs/

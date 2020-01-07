@@ -15,15 +15,21 @@
 # MY NOTE ABOUT MULTI-STAGE DOCKER:
 #
 
-VERSION:=1.0
-
+VERSION:=1.1
+THISDIR:=$(shell readlink -f .)
 
 # targets to run on your baremetal:
 
 docker-builder-base:
 	@echo "=============================> BUILDING BASE BUILDER IMAGE"
-	docker build -t fmontorsi_builder:$(VERSION)  .                  -f Dockerfile.buildbase
+	docker build -t fmontorsi_builder:1           .                  -f Dockerfile.buildbase
 
+
+#
+# SOLUTION #1: 2 different stages, using 2 Dockerfiles
+# PRO: simple to understand, provides output on host filesystem
+# CON: does not easily allow to do incremental builds, lots of commands, hard to maintain perhaps
+#
 docker-2stages: docker-builder-base
 	@echo "=============================> BUILDING STAGE1"
 	# prepare images for cross-compiling:
@@ -39,20 +45,44 @@ docker-2stages: docker-builder-base
 	@echo "=============================> BUILDING STAGE2"
 	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.stage2-production
 	
+#
+# SOLUTION #2: 2 different stages using a single multistage Dockerfile
+# PRO: simple to understand, single Dockerfile
+# CON: does not easily allow to do incremental builds
+#
 docker-multistage: docker-builder-base
 	# build & produce production docker in a single step:
 	@echo "=============================> BUILDING MULTISTAGE DOCKER"
 	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.multistage
 
+
+#
+# SOLUTION #3: use the docker builder image mounting a shared volume
+# PRO: single Dockerfile, allows for incremental builds
+# CON: 
+#
+docker-sharedvolume: docker-builder-base
+	@echo "=============================> BUILDING SHARED-VOLUME BUILDER DOCKER"
+	docker build -t mytest:build                  .                  -f Dockerfile.sharedvolume
+	@echo "=============================> RUNNING SHARED-VOLUME BUILDER DOCKER"
+	docker rm -f mybuilder || true
+	rm -rf bin/* output/*
+	docker run \
+		--name mybuilder \
+		--env MAKEFILE_OPTS="-C /project -f Makefile.buildapp install DESTDIR=/project/output" \
+		--volume $(THISDIR):/project \
+		mytest:build
+	@echo "=============================> THE BINARY AND ITS DEPENDENCIES ARE NOW AVAILABLE IN $(THISDIR)"
+	cd output && tar -xvf mytest.tar.gz && rm -f mytest.tar.gz
+	@echo "=============================> BUILDING STAGE2"
+	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.stage2-production
+
+
+
+#
+# Test produced docker:
+#
+
 docker-run:
 	docker run -it --rm --name mytest -P mytest:$(VERSION)
 
-
-# targets that are run from inside Dockers:
-
-all:
-	gcc -o mytest mytest.cpp -lzmq
-
-install:
-	mkdir -p $(DESTDIR)/bin/
-	cp -afv mytest $(DESTDIR)/bin/

@@ -3,20 +3,20 @@
 # and to package all its required dependencies as a tarball
 #
 
-FROM fmontorsi_builder:1.0
+FROM fmontorsi_builder:1
 
 # additional deps
 RUN yum install -y zeromq-devel
 
 # prepare sandbox for building
 RUN mkdir -p /home/builder /opt/dest
-COPY *.cpp *.h Makefile /home/builder/
+COPY *.cpp *.h -f Makefile.buildapp /home/builder/
 RUN ls -la /home/builder/
 
 # build & then install app under /opt
-RUN make -C /home/builder/ all
-RUN make -C /home/builder/ install DESTDIR=/opt/mytest
+RUN make -C /home/builder/ -f Makefile.buildapp all
+RUN make -C /home/builder/ -f Makefile.buildapp install DESTDIR=/opt/mytest
 
 # package the app binary and all its companion shared libraries
-RUN lddtree -l /opt/mytest/bin/mytest | tee -a /home/builder/dependency_map.txt
-RUN tar --dereference -c -v -z --absolute-names --files-from=/home/builder/dependency_map.txt -f /opt/dest/output.tar.gz
+#RUN lddtree -l /opt/mytest/bin/mytest | tee -a /home/builder/dependency_map.txt
+#RUN tar --dereference -c -v -z --absolute-names --files-from=/home/builder/dependency_map.txt -f /opt/dest/output.tar.gz
