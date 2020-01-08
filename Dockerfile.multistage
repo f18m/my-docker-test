@@ -17,12 +17,9 @@ RUN gdb --version
 RUN mkdir -p /home/builder /opt/dest
 COPY *.cpp *.h Makefile.buildapp /home/builder/
 RUN ls -la /home/builder/
-RUN make -C /home/builder/ -f Makefile.buildapp all
 RUN make -C /home/builder/ -f Makefile.buildapp install DESTDIR=/opt/mytest
-RUN lddtree -l /opt/mytest/bin/mytest | tee -a /home/builder/dependency_map.txt
 
-RUN rsync -av -L -K --files-from=/home/builder/dependency_map.txt / /production-docker-rootfs/
-##RUN tar -c -v -z --absolute-names --files-from=/home/builder/dependency_map.txt -f /opt/dest/output.tar.gz
+RUN rsync -av -L -K --files-from=/tmp/dependency_map.txt / /production-docker-rootfs/
 
 #
 # Second stage: production Docker container
@@ -31,4 +28,4 @@ RUN rsync -av -L -K --files-from=/home/builder/dependency_map.txt / /production-
 FROM scratch
 COPY --from=mytest_builder /production-docker-rootfs/ /
 EXPOSE 8080
-ENTRYPOINT [ "/opt/mytest/bin/mytest" ]
+ENTRYPOINT [ "/home/builder/build/mytest" ]

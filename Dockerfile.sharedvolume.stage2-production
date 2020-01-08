@@ -1,0 +1,8 @@
+# production Docker container:
+# assumes that the ELF has been already built and is available on the baremetal filesystem
+# under the bin/ folder. All its required shared libraries should be available as well under bin/
+
+FROM scratch
+COPY output/ /
+EXPOSE 8080
+ENTRYPOINT [ "/project/build/mytest" ]

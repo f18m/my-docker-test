@@ -22,7 +22,7 @@ THISDIR:=$(shell readlink -f .)
 
 docker-builder-base:
 	@echo "=============================> BUILDING BASE BUILDER IMAGE"
-	docker build -t fmontorsi_builder:1           .                  -f Dockerfile.buildbase
+	docker build -t fmontorsi_builder:1           .                  -f Dockerfile.build-base
 
 
 #
@@ -30,20 +30,22 @@ docker-builder-base:
 # PRO: simple to understand, provides output on host filesystem
 # CON: does not easily allow to do incremental builds, lots of commands, hard to maintain perhaps
 #
+#  NOTE: this solution is so problematic that I disabled it, use either #2 or #3
+#
 docker-2stages: docker-builder-base
-	@echo "=============================> BUILDING STAGE1"
-	# prepare images for cross-compiling:
-	docker build -t mytest:build                  .                  -f Dockerfile.stage1-build
-	# extract result of cross-compiling into bin/
-	docker rm -f extract || true
-	docker create --name extract                  mytest:build
-	mkdir -p bin && rm -rf bin/*
-	docker cp extract:/opt/dest/output.tar.gz     bin/
-	cd bin && tar -xvf output.tar.gz && rm -f output.tar.gz
-	docker rm -f extract
-	# now build the production container:
-	@echo "=============================> BUILDING STAGE2"
-	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.stage2-production
+#	@echo "=============================> BUILDING STAGE1"
+#	# prepare images for cross-compiling:
+#	docker build -t mytest:build                  .                  -f Dockerfile.stage1-build
+#	# extract result of cross-compiling into bin/
+#	docker rm -f extract || true
+#	docker create --name extract                  mytest:build
+#	mkdir -p bin && rm -rf bin/*
+#	docker cp extract:/opt/dest/output.tar.gz     bin/
+#	cd bin && tar -xvf output.tar.gz && rm -f output.tar.gz
+#	docker rm -f extract
+#	# now build the production container:
+#	@echo "=============================> BUILDING STAGE2"
+#	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.stage2-production
 	
 #
 # SOLUTION #2: 2 different stages using a single multistage Dockerfile
@@ -63,7 +65,7 @@ docker-multistage: docker-builder-base
 #
 docker-sharedvolume: docker-builder-base
 	@echo "=============================> BUILDING SHARED-VOLUME BUILDER DOCKER"
-	docker build -t mytest:build                  .                  -f Dockerfile.sharedvolume
+	docker build -t mytest:build                  .                  -f Dockerfile.sharedvolume.stage1-build
 	@echo "=============================> RUNNING SHARED-VOLUME BUILDER DOCKER"
 	docker rm -f mybuilder || true
 	rm -rf bin/* output/*
@@ -75,7 +77,7 @@ docker-sharedvolume: docker-builder-base
 	@echo "=============================> THE BINARY AND ITS DEPENDENCIES ARE NOW AVAILABLE IN $(THISDIR)"
 	cd output && tar -xvf mytest.tar.gz && rm -f mytest.tar.gz
 	@echo "=============================> BUILDING STAGE2"
-	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.stage2-production
+	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.sharedvolume.stage2-production
 
 
 

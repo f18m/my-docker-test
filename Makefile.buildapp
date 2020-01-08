@@ -1,14 +1,18 @@
-
 # targets that are run from inside Dockers:
 
+THISDIR:=$(shell readlink -f .)
+
 all:
-	gcc -c -o mytest.o mytest.cpp
-	gcc -o mytest mytest.o -lzmq
+	mkdir -p build && rm -rf build/*
+	gcc -c -o build/mytest.o mytest.cpp
+	gcc -o build/mytest build/mytest.o -lzmq
 
 install: all
-	#mkdir -p $(DESTDIR)/bin/ $(DESTDIR)/output/
-	#cp -afv mytest $(DESTDIR)/bin/
-	# package the app binary and all its companion shared libraries
+	# typical installation procedure may look like:
+	#    mkdir -p $(DESTDIR)/bin/
+	#    cp -afv mytest $(DESTDIR)/bin/
+	# instead to meet Docker logic of shipping all binaries and dependencies, we
+	# package the app binary and all its companion shared libraries:
 	mkdir -p $(DESTDIR)
-	lddtree -l mytest | tee -a /tmp/dependency_map.txt
+	lddtree -l $(THISDIR)/build/mytest | tee -a /tmp/dependency_map.txt
 	tar --dereference -c -v -z --absolute-names --files-from=/tmp/dependency_map.txt -f $(DESTDIR)/mytest.tar.gz
