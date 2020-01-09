@@ -88,3 +88,5 @@ docker-sharedvolume: docker-builder-base
 docker-run:
 	docker run -it --rm --name mytest -P mytest:$(VERSION)
 
+docker-run-daemon:
+	docker run -it -d --rm --name mytest -P mytest:$(VERSION)
