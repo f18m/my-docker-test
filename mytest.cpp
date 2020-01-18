@@ -2,11 +2,28 @@
 // from http://glaudiston.blogspot.com/2017/08/zmq-zeromq-as-http-server.html
 
 #include <cassert>
+#include <string>
 #include "zhelpers.h"
 
 static volatile int keepRunning = 1;
 
 void intHandler(int dummy) { keepRunning = 0; }
+
+void MyLog(const char *fmt, ...) {
+  char tmp[1024];
+  va_list args;
+
+  /* Format name with variable arguments. */
+  va_start(args, fmt);
+  vsnprintf(tmp, 1024, fmt, args);
+  va_end(args);
+
+  fputs(tmp, stdout);
+
+  // for some reason in Minikube I cannot see the STDOUT of a POD, just its
+  // STDERR, so print every logline also on stderr:
+  fputs(tmp, stderr);
+}
 
 int main(void) {
   int rc;
@@ -24,7 +41,7 @@ int main(void) {
 
   signal(SIGINT, intHandler);
 
-  printf("ZMQ-based HTTP server initialized\n");
+  MyLog("ZMQ-based HTTP server initialized\n");
 
   zmq_msg_t http_request;
   zmq_msg_init(&http_request);
@@ -39,14 +56,14 @@ int main(void) {
     // Get HTTP request PAYLOAD
     rc = zmq_msg_recv(&http_request, server, 0);
     if (rc == -1) break;
-    printf("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
-           zmq_msg_data(&http_request));  // Professional Logging(TM)
+    MyLog("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
+          zmq_msg_data(&http_request));  // Professional Logging(TM)
 
     while (true) {
       rc = zmq_msg_recv(&http_request, server, ZMQ_DONTWAIT);
       if (rc == -1) break;
-      printf("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
-             zmq_msg_data(&http_request));  // Professional Logging(TM)
+      MyLog("Received HTTP request (%zuB): %s\n", zmq_msg_size(&http_request),
+            zmq_msg_data(&http_request));  // Professional Logging(TM)
     }
 
     // define the response
@@ -70,7 +87,7 @@ int main(void) {
     assert(rc != -1);
   }
 
-  printf("ZMQ-based HTTP server shutting down\n");
+  MyLog("ZMQ-based HTTP server shutting down\n");
 
   rc = zmq_close(server);
   assert(rc == 0);
