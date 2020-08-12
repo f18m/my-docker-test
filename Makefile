@@ -55,7 +55,7 @@ docker-2stages: docker-builder-base
 docker-multistage: docker-builder-base
 	# build & produce production docker in a single step:
 	@echo "=============================> BUILDING MULTISTAGE DOCKER"
-	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.multistage
+	docker build -t f18m/my-docker-test:$(VERSION)             .                  -f Dockerfile.multistage
 
 
 #
@@ -77,7 +77,7 @@ docker-sharedvolume: docker-builder-base
 	@echo "=============================> THE BINARY AND ITS DEPENDENCIES ARE NOW AVAILABLE IN $(THISDIR)"
 	cd output && tar -xvf mytest.tar.gz && rm -f mytest.tar.gz
 	@echo "=============================> BUILDING STAGE2"
-	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.sharedvolume.stage2-production
+	docker build -t f18m/my-docker-test:$(VERSION)             .                  -f Dockerfile.sharedvolume.stage2-production
 
 
 
@@ -85,8 +85,11 @@ docker-sharedvolume: docker-builder-base
 # Test produced docker:
 #
 
+docker-push:
+	docker push f18m/my-docker-test:$(VERSION)
+
 docker-run:
-	docker run -it --rm --name mytest -P mytest:$(VERSION)
+	docker run -it --rm --name mytest -P f18m/my-docker-test:$(VERSION)
 
 docker-run-daemon:
-	docker run -it -d --rm --name mytest -P mytest:$(VERSION)
+	docker run -it -d --rm --name mytest -P f18m/my-docker-test:$(VERSION)
