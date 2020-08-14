@@ -1,23 +1,23 @@
-#
-# Main makefile that
-#  - cross compiles an application
-#  - creates an optimized Docker to run it
-#
-# USEFUL APP#1:
-#   dockerize (https://github.com/jwilder/dockerize) is able to collect all ELF required
-#   dependencies and produce a docker out of them. PROBLEM: requires the ELF to have been
-#   built on the baremetal -- we want to build the application inside a docker instead
-#   to make sure we can build the application on any OS we like
-#
-# USEFUL APP#2
-#  Dive (https://github.com/wagoodman/dive) can be used to explore each layer of a Docker image
-#
-# MY NOTE ABOUT MULTI-STAGE DOCKER:
-#
+# targets that are run from inside Dockers:
 
-VERSION:=1.2
 THISDIR:=$(shell readlink -f .)
 
+<<<<<<< HEAD
+all:
+	mkdir -p build && rm -rf build/*
+	gcc -c -o build/mytest.o mytest.cpp
+	gcc -o build/mytest build/mytest.o -lzmq
+
+install: all
+	# typical installation procedure may look like:
+	#    mkdir -p $(DESTDIR)/bin/
+	#    cp -afv mytest $(DESTDIR)/bin/
+	# instead to meet Docker logic of shipping all binaries and dependencies, we
+	# package the app binary and all its companion shared libraries:
+	mkdir -p $(DESTDIR)
+	lddtree -l $(THISDIR)/build/mytest | tee -a /tmp/dependency_map.txt
+	tar --dereference -c -v -z --absolute-names --files-from=/tmp/dependency_map.txt -f $(DESTDIR)/mytest.tar.gz
+=======
 # targets to run on your baremetal:
 
 docker-builder-base:
@@ -93,3 +93,4 @@ docker-run:
 
 docker-run-daemon:
 	docker run -it -d --rm --name mytest -P f18m/my-docker-test:$(VERSION)
+>>>>>>> 38cd506f71091fff83c7969ddb7950feb8126d2e

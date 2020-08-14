@@ -5,7 +5,22 @@
 FROM fedora:28 as fmontorsi_builder
 
 RUN yum install -y git make automake gcc gcc-c++ kernel-devel gdb \
-                   pax-utils
+                   pax-utils boost valgrind gdb-gdbserver procps
+                   
 
-RUN gcc --version
-RUN gdb --version
+#RUN dnf -y debuginfo-install glibc keyutils-libs-1.5.10-6.fc28.x86_64 \
+#				krb5-libs-1.16.1-21.fc28.x86_64 \
+#				libcom_err-1.44.2-0.fc28.x86_64 \
+#				libgcc-8.3.1-2.fc28.x86_64 \
+#				libselinux-2.8-1.fc28.x86_64 \
+#				libstdc++-8.3.1-2.fc28.x86_64 \
+#				openpgm-5.2.122-11.fc28.x86_64 \
+#				openssl-libs-1.1.0i-1.fc28.x86_64 \
+#				pcre2-10.32-4.fc28.x86_64 \
+#				zeromq-4.1.6-7.fc28.x86_64 \
+#				zlib-1.2.11-8.fc28.x86_64
+               
+               
+
+
+#	EXPOSE 20002 

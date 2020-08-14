@@ -25,7 +25,7 @@ RUN rsync -av -L -K --files-from=/tmp/dependency_map.txt / /production-docker-ro
 # Second stage: production Docker container
 #
 
-FROM scratch
+FROM fmontorsi_builder:1 as mytest_prod
 COPY --from=mytest_builder /production-docker-rootfs/ /
 EXPOSE 8080
 ENTRYPOINT [ "/home/builder/build/mytest" ]
