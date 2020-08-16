@@ -29,8 +29,8 @@ int main(void) {
   int rc;
    int * malloc_without_free=(int*) malloc(11*sizeof(int));
 
-  s_sleep(5000);
- // assert(0);
+  //s_sleep(5000);
+  //assert(0);
   // Set-up our context and sockets
   void *ctx = zmq_ctx_new();
   assert(ctx);
