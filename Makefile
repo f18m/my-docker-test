@@ -83,10 +83,10 @@ docker-sharedvolume: docker-builder-base
 	@echo "=============================> THE BINARY AND ITS DEPENDENCIES ARE NOW AVAILABLE IN $(THISDIR)"
 	cd output && tar -xvf mytest.tar.gz  && rm -f mytest.tar.gz
 	@echo "=============================> BUILDING STAGE2"
-	docker build -t mytest:$(VERSION)             .                  -f Dockerfile.sharedvolume.stage2-production
-	@echo "=============================> BUILDING VALGRIND"
+	docker build -t f18m/my-docker-test:$(VERSION)             .                  -f Dockerfile.sharedvolume.stage2-production
 
 docker-build-valgrind:
+	@echo "=============================> BUILDING VALGRIND"
 	docker build -t mytest_valgrind:$(VERSION) 		.				 -f Dockerfile.valgrind
 
 #	
@@ -101,10 +101,10 @@ docker-push:
 	docker push f18m/my-docker-test:$(VERSION)
 
 docker-run:
-	docker run --privileged -it --rm  --cap-add sys_ptrace --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH)  --name mytest -P mytest:$(VERSION)
+	docker run --privileged -it --rm  --cap-add sys_ptrace --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH)  --name mytest -P f18m/my-docker-test:$(VERSION)
 
 docker-run-daemon:
-	docker run --privileged -it -d --rm --cap-add sys_ptrace  --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH) --name mytest -P mytest:$(VERSION)
+	docker run --privileged -it -d --rm --cap-add sys_ptrace  --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH) --name mytest -P f18m/my-docker-test:$(VERSION)
 	
 docker-attach:
 	docker exec -it --privileged  mytest /bin/bash	
@@ -130,5 +130,5 @@ docker-debug-remote:
 #to run valgrind you can use a specific image or modify the entrypoint	(I prefer the second one)
 docker-run-valgrind:
 #	docker run --rm -ti --name mytest-valgrind -P mytest_valgrind:$(VERSION)
-	docker run --rm -ti --entrypoint /usr/bin/valgrind --name mytest-valgrind -P mytest:$(VERSION) /project/build/mytest
+	docker run --rm -ti --entrypoint /usr/bin/valgrind --name mytest-valgrind -P f18m/my-docker-test:$(VERSION) /project/build/mytest
 

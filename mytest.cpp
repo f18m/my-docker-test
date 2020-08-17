@@ -7,7 +7,7 @@
 #include <string>
 #include "zhelpers.h"
 
-#define CONFIG_FILE "/etc/configmap"
+#define CONFIG_FILE "/etc/configmap/mytest.ini"
 
 static volatile int keepRunning = 1;
 
