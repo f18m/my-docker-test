@@ -2,8 +2,12 @@
 // from http://glaudiston.blogspot.com/2017/08/zmq-zeromq-as-http-server.html
 
 #include <cassert>
+#include <fstream>
+#include <iostream>
 #include <string>
 #include "zhelpers.h"
+
+#define CONFIG_FILE "/etc/configmap"
 
 static volatile int keepRunning = 1;
 
@@ -27,10 +31,10 @@ void MyLog(const char *fmt, ...) {
 
 int main(void) {
   int rc;
-   int * malloc_without_free=(int*) malloc(11*sizeof(int));
+  int *malloc_without_free = (int *)malloc(11 * sizeof(int));
 
-  //s_sleep(5000);
-  //assert(0);
+  // s_sleep(5000);
+  // assert(0);
   // Set-up our context and sockets
   void *ctx = zmq_ctx_new();
   assert(ctx);
@@ -46,6 +50,19 @@ int main(void) {
 
   MyLog("ZMQ-based HTTP server initialized. Value of a test env var is %s\n",
         getenv("HELM_TEST_ENV"));
+
+  // simulate reading a configuration file (which might map to a Kubernetes
+  // configmap):
+  {
+    std::ifstream f(CONFIG_FILE);
+
+    if (f.is_open()) {
+      MyLog("Successfully opened configuration file %s. Dumping its contents\n",
+            CONFIG_FILE);
+      std::cout << f.rdbuf();
+    } else
+      MyLog("Failed opening configuration file %s\n", CONFIG_FILE);
+  }
 
   zmq_msg_t http_request;
   zmq_msg_init(&http_request);

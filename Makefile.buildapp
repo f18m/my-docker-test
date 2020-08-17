@@ -6,7 +6,8 @@ all:
 	mkdir -p build && rm -rf build/*
 	#gcc -g -c -o build/mytest.o mytest.cpp
 	#gcc -g -o build/mytest build/mytest.o -lzmq
-	gcc -ggdb -o build/mytest mytest.cpp -lzmq
+	gcc -ggdb -o build/mytest mytest.cpp -lzmq -lstdc++
+
 install: all
 	# typical installation procedure may look like:
 	#    mkdir -p $(DESTDIR)/bin/
