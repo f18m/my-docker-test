@@ -44,7 +44,8 @@ int main(void) {
 
   signal(SIGINT, intHandler);
 
-  MyLog("ZMQ-based HTTP server initialized\n");
+  MyLog("ZMQ-based HTTP server initialized. Value of a test env var is %s\n",
+        getenv("HELM_TEST_ENV"));
 
   zmq_msg_t http_request;
   zmq_msg_init(&http_request);
