@@ -4,8 +4,11 @@
 #
 FROM fedora:28 as fmontorsi_builder
 
-RUN yum install -y git make automake gcc gcc-c++ kernel-devel gdb \
-                   pax-utils boost valgrind gdb-gdbserver procps
+#RUN yum install -y git make automake gcc gcc-c++ kernel-devel  \
+#                   pax-utils boost valgrind gdb-gdbserver procps
+ 
+RUN yum install -y git make automake gcc gcc-c++ kernel-devel  \
+                   pax-utils  procps
                    
 
 #RUN dnf -y debuginfo-install glibc keyutils-libs-1.5.10-6.fc28.x86_64 \

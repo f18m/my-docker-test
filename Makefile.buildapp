@@ -20,6 +20,5 @@ install: all
 #	tar --dereference -c -v -z --absolute-names --files-from=/tmp/dependency_map.txt -f $(DESTDIR)/mytest.tar.gz
 #	tar -c $(DESTDIR)/mytest2.tar.gz /usr/lib/debug/.build-id
 #	tar  --dereference -v -c -z -f $(DESTDIR)/mytest-debug.tar.gz /usr/lib/debug/.build-id
-
 	tar --dereference -c -v -z --absolute-names --files-from=/tmp/dependency_map.txt -f $(DESTDIR)/mytest.tar.gz
 	#tar -c -f $(DESTDIR)/mytest.tar.gz /usr/lib/debug/.build-id
