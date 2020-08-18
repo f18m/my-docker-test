@@ -1,0 +1,13 @@
+version: '3'
+services:
+  mytest:
+    image: "f18m/my-docker-test:1.4" 
+    container_name: mytest
+    ports:
+      - "8080:8080"
+    cap_add:
+    - SYS_PTRACE
+    volumes:
+    - /tmp/coredumps_volume:/cores
+    ulimits:
+      core: -1
