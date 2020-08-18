@@ -13,7 +13,7 @@ ENV MAKEFILE_OPTS "-C /home/builder"
 VOLUME ["/project"]
 
 RUN gcc --version
-RUN gdb --version
+#RUN gdb --version
 RUN mkdir -p /home/builder
 
 CMD make ${MAKEFILE_OPTS}

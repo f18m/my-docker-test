@@ -2,7 +2,7 @@
 # assumes that the ELF has been already built and is available on the baremetal filesystem
 # under the bin/ folder. All its required shared libraries should be available as well under bin/
 
-FROM registry.fedoraproject.org/fedora-minimal:30
-COPY output/ /
+FROM fmontorsi_prod:1
+ADD output/mytest.tar.gz /
 EXPOSE 8080
 CMD [ "/project/build/mytest" ]
