@@ -8,6 +8,11 @@ services:
     cap_add:
     - SYS_PTRACE
     volumes:
-    - /tmp/coredumps_volume:/cores
+    - /tmp/mytest_coredumps_volume:/cores
+    - /tmp/mytest_log_volume:/logs
     ulimits:
       core: -1
+#uncomment next line to run valgrind (logs created in /tmp/mytest_log_volume)
+#    entrypoint: ["/usr/bin/valgrind", "--log-file=/logs/valgrind.log", "/project/build/mytest"]
+
+ 

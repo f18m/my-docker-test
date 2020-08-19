@@ -4,7 +4,7 @@
 FROM fmontorsi_builder:1 as mytest_builder
 
 # additional deps
-RUN yum install -y zeromq-devel
+RUN microdnf install -y zeromq-devel
 
 # default is to build something that a derived image has placed inside the container image:
 ENV MAKEFILE_OPTS "-C /home/builder"

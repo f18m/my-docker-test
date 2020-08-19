@@ -9,9 +9,8 @@
 FROM fmontorsi_builder:1 as mytest_builder
 
 # additional utilities over the base builder image:
-RUN yum install -y zeromq-devel rsync
+RUN microdnf install -y zeromq-devel rsync
 RUN gcc --version
-RUN gdb --version
 
 # cross-compile the software using the builder image toolchain:
 RUN mkdir -p /home/builder /opt/dest
@@ -25,7 +24,7 @@ RUN rsync -av -L -K --files-from=/tmp/dependency_map.txt / /production-docker-ro
 # Second stage: production Docker container
 #
 
-FROM fmontorsi_builder:1 as mytest_prod
+FROM fmontorsi_prod:1 as mytest_prod
 COPY --from=mytest_builder /production-docker-rootfs/ /
 EXPOSE 8080
 ENTRYPOINT [ "/home/builder/build/mytest" ]

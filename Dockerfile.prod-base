@@ -1,4 +1,4 @@
-FROM registry.fedoraproject.org/fedora-minimal:30
+FROM registry.fedoraproject.org/fedora-minimal:31
 
-RUN microdnf install -y valgrind gdb-gdbserver procps && microdnf clean all
-#RUN microdnf install -y git make gdb && microdnf clean all
+RUN microdnf install -y gdb-minimal valgrind gdb-gdbserver \
+						procps && microdnf clean all

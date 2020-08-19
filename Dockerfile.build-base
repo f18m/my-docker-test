@@ -2,13 +2,10 @@
 # Base builder image:
 # defines which toolchain will be used to build the C++ code
 #
-FROM fedora:28 as fmontorsi_builder
+FROM registry.fedoraproject.org/fedora-minimal:31 as fmontorsi_builder
 
-#RUN yum install -y git make automake gcc gcc-c++ kernel-devel  \
-#                   pax-utils boost valgrind gdb-gdbserver procps
- 
-RUN yum install -y git make automake gcc gcc-c++ kernel-devel  \
-                   pax-utils  procps
+RUN microdnf install -y git make automake gcc gcc-c++ kernel-devel  \
+                   pax-utils tar
                    
 
 #RUN dnf -y debuginfo-install glibc keyutils-libs-1.5.10-6.fc28.x86_64 \

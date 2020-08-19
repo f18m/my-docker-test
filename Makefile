@@ -17,10 +17,17 @@
 VERSION:=1.4
 THISDIR:=$(shell readlink -f .)
 DEBUG_PORT:=20002
-LOCAL_CORE_PATH:=/cores
-DEST_CORE_PATH:=/tmp/coredumps_volume
+
 PROD_IMAGE_NAME:=f18m/my-docker-test
 PROD_CONTAINER_NAME=mytest
+
+
+MOUNT_CORE_PATH:=/cores
+LOCAL_CORE_PATH:=/tmp/$(PROD_CONTAINER_NAME)_coredumps_volume
+
+MOUNT_LOG_PATH:=/logs
+LOCAL_LOG_PATH:=/tmp/$(PROD_CONTAINER_NAME)_log_volume
+
 # targets to run on your baremetal:
 
 docker-builder-base:
@@ -98,20 +105,23 @@ docker-build-valgrind:
 #to have core dumps you must set the core pattern of your local machine
 #to read core dumps locally you have to set sysroot output/ in gdb
 set-local-core-path:
-	echo "$(LOCAL_CORE_PATH)/core.%e.%p.%t	" >  /proc/sys/kernel/core_pattern
+	echo "$(MOUNT_CORE_PATH)/core.%e.%p.%t	" >  /proc/sys/kernel/core_pattern
 
 docker-push:
 	docker push $(PROD_IMAGE_NAME):$(VERSION)
 
 docker-run:
-	docker run --privileged -it --rm  --cap-add sys_ptrace --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH)  --name $(PROD_CONTAINER_NAME) -P $(PROD_IMAGE_NAME):$(VERSION)
+	docker run --privileged -it --rm  --cap-add sys_ptrace --ulimit core=-1 -v $(LOCAL_CORE_PATH):$(MOUNT_CORE_PATH)  --name $(PROD_CONTAINER_NAME) -P $(PROD_IMAGE_NAME):$(VERSION)
 
 docker-run-daemon:
-	docker run --privileged -it -d --rm --cap-add sys_ptrace  --ulimit core=-1 -v $(DEST_CORE_PATH):$(LOCAL_CORE_PATH) --name $(PROD_CONTAINER_NAME) -P $(PROD_IMAGE_NAME):$(VERSION)
+	docker run --privileged -it -d --rm --cap-add sys_ptrace  --ulimit core=-1 -v $(LOCAL_CORE_PATH):$(MOUNT_CORE_PATH) --name $(PROD_CONTAINER_NAME) -P $(PROD_IMAGE_NAME):$(VERSION)
 	
 docker-attach:
 	docker exec -it --privileged  $(PROD_CONTAINER_NAME) /bin/bash	
 	
+docker-run-bash:
+	docker run --privileged -it --rm --entrypoint /bin/bash --cap-add sys_ptrace --ulimit core=-1 -v $(LOCAL_LOG_PATH):$(MOUNT_LOG_PATH)  -v $(LOCAL_CORE_PATH):$(MOUNT_CORE_PATH)  --name $(PROD_CONTAINER_NAME)-bash -P $(PROD_IMAGE_NAME):$(VERSION)
+
 docker-stop:
 	docker stop $(PROD_CONTAINER_NAME)
 
@@ -119,7 +129,7 @@ docker-stop:
 #attach gdb to process 1 (entrypoint)
 #CON: you can't see source code
 docker-debug:	
-	docker exec -it --privileged  $(PROD_CONTAINER_NAME) /usr/bin/gdb -p 1
+	docker exec -it --privileged  $(PROD_CONTAINER_NAME) /usr/bin/gdb.minimal -p 1
 
 #run gdbserver on the docker container
 #attach gdbserver to process 1
@@ -133,5 +143,5 @@ docker-debug-remote:
 #to run valgrind you can use a specific image or modify the entrypoint	(I prefer the second one)
 docker-run-valgrind:
 #	docker run --rm -ti --name mytest-valgrind -P mytest_valgrind:$(VERSION)
-	docker run --rm -ti --entrypoint /usr/bin/valgrind --name $(PROD_CONTAINER_NAME)-valgrind -P $(PROD_IMAGE_NAME):$(VERSION) /project/build/mytest
+	docker run --rm -ti --entrypoint /usr/bin/valgrind --name $(PROD_CONTAINER_NAME)-valgrind -v $(LOCAL_LOG_PATH):$(MOUNT_LOG_PATH) -P $(PROD_IMAGE_NAME):$(VERSION) --log-file=$(MOUNT_LOG_PATH)/valgrind.log /project/build/mytest
 
